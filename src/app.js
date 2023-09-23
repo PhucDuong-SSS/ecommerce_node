@@ -8,9 +8,13 @@ const app = express();
 // init middleware
 app.use(morgan("dev"));
 app.use(helmet());
-app.use(compression()); 
+app.use(compression());
 
 // init database
+require("./bds/init.mongodb");
+const { countConnect, checkOverloading } = require("./helpers/check.connect");
+countConnect();
+checkOverloading();
 
 // init routes
 app.get("/", (req, res, next) => {
