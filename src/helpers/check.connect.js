@@ -3,7 +3,7 @@
 const mongoose = require("mongoose");
 const os = require("os");
 const process = require("process");
-const _SECONDS = 5000;
+const _SECONDS = 500000;
 const MAX_CONNECTIONS_PER_CORE = 5;
 
 // count connections
