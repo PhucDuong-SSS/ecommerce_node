@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const { compile } = require("morgan");
 const { default: helmet } = require("helmet");
