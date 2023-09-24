@@ -10,6 +10,12 @@ const app = express();
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
+app.use(express.json());
+app.use(
+  express.urlencoded({
+    extended: true,
+  })
+);
 
 // init database
 require("./bds/init.mongodb");
@@ -18,13 +24,7 @@ countConnect();
 checkOverloading();
 
 // init routes
-app.get("/", (req, res, next) => {
-  const str = "heloe";
-  return res.status(200).json({
-    msg: "welcome to",
-    mass: str.repeat(10000),
-  });
-});
+app.use("/", require("./routes/index"));
 // handle errors
 
 module.exports = app;
