@@ -9,6 +9,7 @@ class AccessController {
       metadata: await AccessService.login(req.body),
     }).send(res);
   };
+
   signUp = async (req, res, next) => {
     new CREATED({
       message: "Register OK!",
@@ -16,6 +17,13 @@ class AccessController {
       options: {
         limit: 10,
       },
+    }).send(res);
+  };
+
+  logout = async (req, res, next) => {
+    new CREATED({
+      message: "Logout OK!",
+      metadata: await AccessService.logout(req.keyStore),
     }).send(res);
   };
 }
