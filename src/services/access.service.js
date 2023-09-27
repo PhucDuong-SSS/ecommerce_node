@@ -4,12 +4,13 @@ const bcrypt = require("bcrypt");
 const crypto = require("node:crypto");
 const shopModel = require("../models/shop.model");
 const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../auth/authUtils");
+const { createTokenPair, verifyJWT } = require("../auth/authUtils");
 const { getInfoData } = require("../utils");
 const {
   BadRequestError,
   ConflictRequestError,
   AuthFailureError,
+  ForbiddenError,
 } = require("../core/error.response");
 const { findByEmail } = require("./shop.service");
 
@@ -143,7 +144,7 @@ class AccessService {
       userId,
       publicKey,
       privateKey,
-      refreshToken: tokens.refreshTokens,
+      refreshToken: tokens.refreshToken,
     });
 
     return {
@@ -159,6 +160,62 @@ class AccessService {
     const delKey = await KeyTokenService.removeTokenById(keyStore._id);
 
     return delKey;
+  };
+
+  static handlerRefreshToken = async (refreshToken) => {
+    // check token used
+    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+      refreshToken
+    );
+
+    if (foundToken) {
+      // decode xem la thang nao
+      const { userId, email } = await verifyJWT(refreshToken, foundToken.privateKey);
+      // xoa tat ca token trong keystore
+      await KeyTokenService.deleteKeyById(userId);
+
+      throw new ForbiddenError(
+        "Something went wrong, please try re login again"
+      );
+    }
+    //No
+    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+    console.log(refreshToken, holderToken);
+    if (!holderToken) {
+      throw new AuthFailureError("shop not registered1");
+    }
+
+    // verify token
+    const { userId, email } = await verifyJWT(refreshToken, holderToken.privateKey);
+
+    //check userId
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) {
+      throw new AuthFailureError("shop not registered2");
+    }
+
+    // create 1 cap moi
+    const tokens = await createTokenPair(
+      { userId, email },
+      holderToken.publicKey,
+      holderToken.privateKey
+    );
+
+    //update token
+
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken,
+      },
+    });
+
+    return {
+      user: { userId, email },
+      tokens,
+    };
   };
 }
 
