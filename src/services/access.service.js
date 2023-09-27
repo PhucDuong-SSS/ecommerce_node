@@ -162,31 +162,73 @@ class AccessService {
     return delKey;
   };
 
-  static handlerRefreshToken = async (refreshToken) => {
-    // check token used
-    const foundToken = await KeyTokenService.findByRefreshTokenUsed(
-      refreshToken
-    );
+  //v1.0
+  // static handlerRefreshToken = async (refreshToken) => {
+  //   // check token used
+  //   const foundToken = await KeyTokenService.findByRefreshTokenUsed(
+  //     refreshToken
+  //   );
 
-    if (foundToken) {
-      // decode xem la thang nao
-      const { userId, email } = await verifyJWT(refreshToken, foundToken.privateKey);
-      // xoa tat ca token trong keystore
+  //   if (foundToken) {
+  //     // decode xem la thang nao
+  //     const { userId, email } = await verifyJWT(refreshToken, foundToken.privateKey);
+  //     // xoa tat ca token trong keystore
+  //     await KeyTokenService.deleteKeyById(userId);
+
+  //     throw new ForbiddenError(
+  //       "Something went wrong, please try re login again"
+  //     );
+  //   }
+  //   //No
+  //   const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
+  //   console.log(refreshToken, holderToken);
+  //   if (!holderToken) {
+  //     throw new AuthFailureError("shop not registered1");
+  //   }
+
+  //   // verify token
+  //   const { userId, email } = await verifyJWT(refreshToken, holderToken.privateKey);
+
+  //   //check userId
+  //   const foundShop = await findByEmail({ email });
+  //   if (!foundShop) {
+  //     throw new AuthFailureError("shop not registered2");
+  //   }
+
+  //   // create 1 cap moi
+  //   const tokens = await createTokenPair(
+  //     { userId, email },
+  //     holderToken.publicKey,
+  //     holderToken.privateKey
+  //   );
+
+  //   //update token
+
+  //   await holderToken.updateOne({
+  //     $set: {
+  //       refreshToken: tokens.refreshToken,
+  //     },
+  //     $addToSet: {
+  //       refreshTokensUsed: refreshToken,
+  //     },
+  //   });
+
+  //   return {
+  //     user: { userId, email },
+  //     tokens,
+  //   };
+  // };
+
+  static handlerRefreshToken = async ({ keyStore, user, refreshToken }) => {
+    const { userId, email } = user;
+
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
       await KeyTokenService.deleteKeyById(userId);
-
-      throw new ForbiddenError(
-        "Something went wrong, please try re login again"
-      );
     }
-    //No
-    const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
-    console.log(refreshToken, holderToken);
-    if (!holderToken) {
+
+    if (keyStore.refreshToken !== refreshToken) {
       throw new AuthFailureError("shop not registered1");
     }
-
-    // verify token
-    const { userId, email } = await verifyJWT(refreshToken, holderToken.privateKey);
 
     //check userId
     const foundShop = await findByEmail({ email });
@@ -197,13 +239,13 @@ class AccessService {
     // create 1 cap moi
     const tokens = await createTokenPair(
       { userId, email },
-      holderToken.publicKey,
-      holderToken.privateKey
+      keyStore.publicKey,
+      keyStore.privateKey
     );
 
     //update token
 
-    await holderToken.updateOne({
+    await keyStore.updateOne({
       $set: {
         refreshToken: tokens.refreshToken,
       },
