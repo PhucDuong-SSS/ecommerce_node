@@ -27,7 +27,7 @@ const productSchema = Schema(
       required: true,
     },
     product_type: {
-      type: Number,
+      type: String,
       required: true,
       enums: ["Electronic", "Clothing", "Furniture"],
     },
