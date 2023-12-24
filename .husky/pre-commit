@@ -1,0 +1,28 @@
+#!/bin/sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+npm run pre-commit
+
+# validate branch name
+task='task\/[0-9]+(_[a-z0-9]+)+'
+fix='fix\/[0-9]+(_[a-z0-9]+)+'
+release='release\/[0-9]+(_[a-z0-9]+)+'
+hotfix='hotfix\/([a-z0-9])+(_[a-z0-9]+)?'
+
+branch_name_format="$task|$fix|$release|$hotfix"
+error_msg="Push not allowed, branch name should starts with task,fix,release,hotfix"
+BRANCH_NAME=$(git symbolic-ref --short HEAD)
+RED='\033[0;31m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo "$BRANCH_NAME"
+if [ ! `echo "$BRANCH_NAME" | grep -E "$branch_name_format"` ]; then
+    echo "${RED}[Error] $error_msg${NC}" >&2
+    echo "Below are sample branch names"
+    echo "${BLUE}task/1234_article_api"
+    echo "fix/1234_login_bug"
+    exit 1
+else
+    echo "Push is successful"
+fi
