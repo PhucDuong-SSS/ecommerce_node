@@ -31,7 +31,6 @@ const productSchema = Schema(
       required: true,
       enums: ["Electronic", "Clothing", "Furniture"],
     },
-    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
     product_attributes: {
       type: Schema.Types.Mixed,
       required: true,
@@ -52,6 +51,7 @@ const clothingSchema = new Schema(
     },
     size: { type: String },
     material: { type: String },
+    product_shop: { type: Schema.Types.ObjectId, ref: "Shop", required: true },
   },
   {
     timestamps: true,
@@ -68,6 +68,7 @@ const electronicSchema = new Schema(
     },
     model: { type: String },
     color: { type: String },
+    product_shop: { type: Schema.Types.ObjectId, ref: "Shop" },
   },
   {
     timestamps: true,
