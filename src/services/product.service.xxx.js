@@ -1,27 +1,32 @@
 "use strict";
 
 const { BadRequestError } = require("../core/error.response");
-const { product, clothing, electronic } = require("../models/product.model");
+const {
+  product,
+  clothing,
+  electronic,
+  furniture,
+} = require("../models/product.model");
 
 // define a factory class to create a product
 
 class ProductFactory {
+  static productRegistry = {};
+
+  static registerProductType(type, classRef) {
+    ProductFactory.productRegistry[type] = classRef;
+  }
+
   /**
    * type: clothing
    * payload
    */
   static async createProduct(type, payload) {
-    switch (type) {
-      case "Electronic":
-        return new Electronic(payload).createProduct();
-
-      case "Clothing":
-        return new Clothing(payload).createProduct();
-
-      case "Furniture":
-        return new Furniture(payload).createProduct();
-      default:
-        throw new BadRequestError(`Invalid Product type ${type}`);
+    const productClass = ProductFactory.productRegistry[type];
+    if (!productClass) {
+      throw new BadRequestError(`Invalid Product type ${type}`);
+    } else {
+      return new productClass(payload).createProduct();
     }
   }
 }
@@ -112,5 +117,9 @@ class Furniture extends Product {
     return newProduct;
   }
 }
+
+ProductFactory.registerProductType("Electronic", Electronic);
+ProductFactory.registerProductType("Clothing", Clothing);
+ProductFactory.registerProductType("Furniture", Furniture);
 
 module.exports = ProductFactory;
