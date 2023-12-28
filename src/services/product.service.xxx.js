@@ -1,5 +1,7 @@
 "use strict";
 
+const { Types } = require("mongoose");
+const ObjectId = require("mongoose").Types.ObjectId;
 const { BadRequestError } = require("../core/error.response");
 const {
   product,
@@ -7,6 +9,13 @@ const {
   electronic,
   furniture,
 } = require("../models/product.model");
+const {
+  findAllDraftForShop,
+  publishOrUnpublishProductByShop,
+  findAllPublishForShop,
+  searchProducts,
+} = require("../models/repositories/product.repo");
+const { productStatus } = require("../constants/product");
 
 // define a factory class to create a product
 
@@ -28,6 +37,52 @@ class ProductFactory {
     } else {
       return new productClass(payload).createProduct();
     }
+  }
+
+  static async publishProductByShop({
+    product_shop,
+    product_id,
+    type = productStatus.publish,
+  }) {
+    const shop = await publishOrUnpublishProductByShop({
+      product_shop,
+      product_id,
+      type,
+    });
+  }
+
+  static async unPublishProductByShop({
+    product_shop,
+    product_id,
+    type = productStatus.unPublish,
+  }) {
+    const shop = await publishOrUnpublishProductByShop({
+      product_shop,
+      product_id,
+      type,
+    });
+  }
+
+  static async findAllDraftForShop(product_shop, limit = 50, skip = 0) {
+    const query = {
+      product_shop: new ObjectId(product_shop),
+      is_Draft: true,
+    };
+    findAllPublishForShop;
+    return await findAllDraftForShop({ query, limit, skip });
+  }
+
+  static async findAllPublishForShop(product_shop, limit = 50, skip = 0) {
+    const query = {
+      product_shop: new ObjectId(product_shop),
+      is_Publish: true,
+    };
+
+    return await findAllPublishForShop({ query, limit, skip });
+  }
+
+  static async searchProducts({ keySearch }) {
+    return await searchProducts({ keySearch });
   }
 }
 
