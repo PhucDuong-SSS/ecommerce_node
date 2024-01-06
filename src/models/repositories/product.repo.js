@@ -8,6 +8,7 @@ const {
   clothing,
 } = require("../product.model");
 const { productStatus } = require("../../constants/product");
+const { getUnSelectData } = require("../../utils");
 
 const findAllDraftForShop = async ({ query, limit, skip }) => {
   return await queryProduct({ query, limit, skip });
@@ -64,9 +65,36 @@ const searchProducts = async ({ keySearch }) => {
     .lean();
 };
 
+const findAllProducts = async ({
+  limit,
+  sort,
+  page,
+  filter = { is_Publish: true },
+  select,
+}) => {
+  const skip = ((page ?? 1) - 1) * limit;
+  const sortBy = sort === "ctime" ? { _id: -1 } : { _id: 1 };
+
+  return await product
+    .find(filter)
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limit)
+    .select(select)
+    .lean();
+};
+
+const findProduct = async ({ productId, unSelect }) => {
+  return await product
+    .findOne({ is_Publish: true, _id: productId })
+    .select(getUnSelectData(unSelect));
+};
+
 module.exports = {
   findAllDraftForShop,
   findAllPublishForShop,
   publishOrUnpublishProductByShop,
   searchProducts,
+  findAllProducts,
+  findProduct,
 };

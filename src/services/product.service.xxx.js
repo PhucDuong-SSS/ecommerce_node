@@ -14,6 +14,8 @@ const {
   publishOrUnpublishProductByShop,
   findAllPublishForShop,
   searchProducts,
+  findAllProducts,
+  findProduct,
 } = require("../models/repositories/product.repo");
 const { productStatus } = require("../constants/product");
 
@@ -83,6 +85,28 @@ class ProductFactory {
 
   static async searchProducts({ keySearch }) {
     return await searchProducts({ keySearch });
+  }
+
+  static async findAllProducts({
+    limit = 50,
+    sort = "ctime",
+    page = 1,
+    filter = { is_Publish: true },
+  }) {
+    return await findAllProducts({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ["product_name", "product_thumb", "product_price"],
+    });
+  }
+
+  static async findProduct({ productId, unSelect = ["__v"] }) {
+    return await findProduct({
+      productId,
+      unSelect,
+    });
   }
 }
 
