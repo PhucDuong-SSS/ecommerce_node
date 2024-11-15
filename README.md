@@ -12,7 +12,4 @@ node --watch server.js
 
 2. Open MongoDB Shell
 To interact with the mongod process, open a new terminal window and run:
-
-bash
-Sao chép mã
 mongo
