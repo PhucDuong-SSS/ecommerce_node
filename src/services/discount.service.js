@@ -102,7 +102,6 @@ class DiscountService {
     }
 
     const { discount_applies_to, discount_product_ids } = foundDiscount;
-    console.log("xxx, ", discount_applies_to, discount_product_ids);
     let products;
     if (discount_applies_to === "all") {
       products = await findAllProducts({
@@ -157,7 +156,6 @@ class DiscountService {
    */
 
   static async getDiscountAmount({ codeId, userId, shopId, products }) {
-    console.log(codeId, userId, shopId, products);
     const foundDiscount = await checkDiscountExits({
       model: discount,
       filter: {
@@ -222,6 +220,7 @@ class DiscountService {
     }
 
     // check xem discount la fixed
+
     const amount =
       discount_type === "fixed_amount"
         ? discount_value

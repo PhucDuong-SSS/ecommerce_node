@@ -1,12 +1,7 @@
 "use strict";
 
 const { Types } = require("mongoose");
-const {
-  product,
-  electronic,
-  furniture,
-  clothing,
-} = require("../product.model");
+const { product } = require("../product.model");
 const { productStatus } = require("../../constants/product");
 const { getUnSelectData, convertToObjectIdMongodb } = require("../../utils");
 
@@ -39,8 +34,6 @@ const publishOrUnpublishProductByShop = async ({
   });
 
   if (!foundShop) return null;
-
-  console.log(type);
 
   foundShop.is_Draft = type === productStatus.publish ? false : true;
   foundShop.is_Publish = type === productStatus.publish ? true : false;
@@ -109,6 +102,21 @@ const findProductById = async (productId) => {
     .lean();
 };
 
+const checkProductByServer = async (products) => {
+  return await Promise.all(
+    products.map(async (product) => {
+      const productFound = await findProductById(product.productId);
+      if (productFound) {
+        return {
+          price: productFound.product_price,
+          quantity: productFound.product_quantity,
+          productId: productFound._id,
+        };
+      }
+    })
+  );
+};
+
 module.exports = {
   findAllDraftForShop,
   findAllPublishForShop,
@@ -118,4 +126,5 @@ module.exports = {
   findProduct,
   updateProductById,
   findProductById,
+  checkProductByServer,
 };
