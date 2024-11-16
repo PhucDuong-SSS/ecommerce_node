@@ -4,6 +4,8 @@ const { BadRequestError } = require("../core/error.response");
 const { findCartById } = require("../models/repositories/cart.repo");
 const { checkProductByServer } = require("../models/repositories/product.repo");
 const { getDiscountAmount } = require("./discount.service");
+const { acquireLock, releaseLock } = require("./redis.service");
+const order = require("../models/order.model");
 // chua logins
 /**
  *{
@@ -106,6 +108,76 @@ class CheckoutService {
       checkout_order,
     };
   }
+
+  static async orderUser({
+    shop_order_ids_new,
+    cartId,
+    userId,
+    user_address = {},
+    user_payment = {},
+  }) {
+    const { shop_order_ids_new, checkout_order } =
+      await CheckoutService.checkoutReview({
+        cartId,
+        userId,
+        shop_order_ids: shop_order_ids_new,
+      });
+
+    //check lai mot lan nua xem vuot ton kho khong
+    // get new Array products
+    const products = shop_order_ids_new.flatMap((order) => order.item_products);
+    const acquireProducts = [];
+    // optimitic clocking  : khoa bi quan
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i];
+      const keyLock = await acquireLock(productId, quantity, cartId);
+      acquireProducts.push(keyLock ? true : false);
+
+      if (keyLock) {
+        await releaseLock(keyLock);
+      }
+    }
+    // check lai neu co mot san pham het hang
+    if (acquireProducts.includes(false)) {
+      throw new BadRequestError(
+        "Mot so san pham da cap nhat, vui long quay lai gio hang"
+      );
+    }
+
+    const newOrder = await order.create({
+      order_userId: userId,
+      order_checkout: checkout_order,
+      order_shipping: user_address,
+      order_payment: user_payment,
+      order_products: shop_order_ids_new,
+    });
+
+    // insert thanh cong remove product trong gio hang
+    if (newOrder) {
+    }
+    return newOrder;
+  }
+
+  /**
+   *  1 query order user
+   */
+
+  static async getOrdersByUser() {}
+  /**
+   *  1 query get one order user
+   */
+
+  static async getOneOrderByUser() {}
+  /**
+   *  1 cancel  order user
+   */
+
+  static async cancelOrderByUser() {}
+  /**
+   *  update status
+   */
+
+  static async updateStatusOrderByShop() {}
 }
 
 module.exports = CheckoutService;
