@@ -17,3 +17,7 @@ chon collection
  use devShop
 show
 > db.ApiKeys.find().pretty()
+
+
+chay loi 
+sudo rm -rf /tmp/mongodb-27017.sock
