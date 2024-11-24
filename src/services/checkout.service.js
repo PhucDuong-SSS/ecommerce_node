@@ -49,7 +49,7 @@ class CheckoutService {
       totalCheckout: 0, // tong thanh toan
     };
 
-    const shop_order_ids_new = [];
+    const shop_order_ids_news = [];
 
     for (let i = 0; i < shop_order_ids.length; i++) {
       const {
@@ -99,18 +99,18 @@ class CheckoutService {
 
       // tong thanh toan
       checkout_order.totalCheckout += item_checkout.priceApplyDiscount;
-      shop_order_ids_new.push(checkout_order);
+      shop_order_ids_news.push(checkout_order);
     }
 
     return {
       shop_order_ids,
-      shop_order_ids_new,
+      shop_order_ids_news,
       checkout_order,
     };
   }
 
   static async orderUser({
-    shop_order_ids_new,
+    shop_order_ids_news,
     cartId,
     userId,
     user_address = {},
@@ -120,7 +120,7 @@ class CheckoutService {
       await CheckoutService.checkoutReview({
         cartId,
         userId,
-        shop_order_ids: shop_order_ids_new,
+        shop_order_ids: shop_order_ids_news,
       });
 
     //check lai mot lan nua xem vuot ton kho khong
@@ -149,7 +149,7 @@ class CheckoutService {
       order_checkout: checkout_order,
       order_shipping: user_address,
       order_payment: user_payment,
-      order_products: shop_order_ids_new,
+      order_products: shop_order_ids_news,
     });
 
     // insert thanh cong remove product trong gio hang

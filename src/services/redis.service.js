@@ -1,53 +1,59 @@
 "use strict";
 
-const redis = require("redis");
-const { promisify } = require("util");
 const {
   reservationInventory,
 } = require("../models/repositories/inventory.repo");
-const redisClient = redis.createClient();
-
-const pexpire = promisify(redisClient.pexpire).bind(redisClient);
-const setnxAsync = promisify(redisClient.pexpire).bind(redisClient);
+const { getRedis } = require("../bds/init.redis");
+const { instanceConnect: redisClient } = getRedis();
 
 const acquireLock = async (productId, quantity, cartId) => {
   const key = `lock_v2023_${productId}`;
   const retryTimes = 10;
-  const expriedTimes = 3000; // 3s
+  const expiredTimes = 3000; // 3s
 
   for (let i = 0; i < retryTimes; i++) {
-    // tao key thang nao nam giu  vao thanh toan
-    const result = await setnxAsync(key, expriedTimes);
-    console.log(`result ${result}`);
+    try {
+      // Attempt to set the key if it does not exist
+      const result = await redisClient.setNX(key, expiredTimes);
+      console.log(`Result: ${result}`);
 
-    if (result === 1) {
-      // thao tac voi inventory
-      const isReservation = await reservationInventory({
-        productId,
-        quantity,
-        cartId,
-      });
+      if (result === 1) {
+        // Perform operations with inventory
+        const isReservation = await reservationInventory({
+          productId,
+          quantity,
+          cartId,
+        });
 
-      if (isReservation.modifiedCount) {
-        await pexpire(key, expriedTimes);
+        if (isReservation.modifiedCount) {
+          // Set expiration for the lock key
+          await redisClient.pExpire(key, expiredTimes);
+        }
+
+        return key; // Lock acquired, return the key
+      } else {
+        // Wait before retrying
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
-
-      return key;
-    } else {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 50);
-      });
+    } catch (error) {
+      console.error(`Error acquiring lock: ${error}`);
     }
   }
+
+  return null; // Lock not acquired after retrying
 };
 
 const releaseLock = async (lock) => {
-  const delAsyncKey = promisify(redisClient.del).bind(redisClient);
-
-  return await delAsyncKey(lock);
+  try {
+    // Delete the lock key
+    const result = await redisClient.del(lock);
+    return result;
+  } catch (error) {
+    console.error(`Error releasing lock: ${error}`);
+    throw error;
+  }
 };
 
-// giu lai khong  cho nguoi sau thanh toan
 module.exports = {
   releaseLock,
   acquireLock,

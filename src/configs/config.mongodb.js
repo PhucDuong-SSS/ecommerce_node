@@ -45,6 +45,16 @@ const dev = {
     port: process.env.DEV_DB_PORT || 27017,
     name: process.env.DEV_DB_NAME || "shopDev",
   },
+  redis: {
+    port: process.env.REDIS_PORT || "6379",
+    host: process.env.REDIS_HOST || "redis",
+  },
+  redis_lab: {
+    host: process.env.REDIS_LAB_HOST || "redis",
+    port: process.env.REDIS_LAB_PORT || "redis",
+    password: process.env.REDIS_LAB_PASS || "redis",
+    username: process.env.REDIS_LAB_USER || "redis",
+  },
 };
 
 const product = {
