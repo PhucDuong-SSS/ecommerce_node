@@ -23,6 +23,9 @@ const { countConnect, checkOverloading } = require("./helpers/check.connect");
 countConnect();
 checkOverloading();
 
+const initRedis = require("./bds/init.redis");
+initRedis.initRedis();
+
 // init routes
 app.use("/", require("./routes/index"));
 
