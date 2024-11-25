@@ -49,8 +49,6 @@ const handleTimeoutError = (err) => {
 };
 
 const handleEventConnect = ({ connectionRedis }) => {
-  console.log({ connectionRedis });
-
   connectionRedis.on("ready", () => {
     console.log(`connectionRedis: connected`);
     clearTimeout(connectTimeout);
