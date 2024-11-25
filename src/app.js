@@ -26,6 +26,12 @@ checkOverloading();
 const initRedis = require("./bds/init.redis");
 initRedis.initRedis();
 
+// test pub sub redis
+require("./test/inventory.test");
+const productTest = require("./test/product.test");
+
+productTest.purchaseProduct("product:001", 10);
+
 // init routes
 app.use("/", require("./routes/index"));
 
