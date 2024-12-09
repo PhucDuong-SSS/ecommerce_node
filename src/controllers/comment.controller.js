@@ -3,6 +3,7 @@
 const {
   createComment,
   getCommentByParentId,
+  deleteComments,
 } = require("../services/comment.service");
 const { SuccessResponse } = require("../core/success.response");
 
@@ -18,6 +19,13 @@ class CommentController {
     new SuccessResponse({
       message: "get comments by parent id",
       metadata: await getCommentByParentId(req.query),
+    }).send(res);
+  };
+
+  deleteComments = async (req, res, next) => {
+    new SuccessResponse({
+      message: "delete comments",
+      metadata: await deleteComments(req.body),
     }).send(res);
   };
 }
