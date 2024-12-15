@@ -7,7 +7,7 @@ sudo systemctl start mongod
 
 
 
-node --watch server.js 
+node --watch -- server.js 
 
 
 2. Open MongoDB Shell
@@ -21,3 +21,4 @@ show
 
 chay loi 
 sudo rm -rf /tmp/mongodb-27017.sock
+
